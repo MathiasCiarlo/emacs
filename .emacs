@@ -12,7 +12,7 @@
 ;; Følgende kan aktiveres for en smoothere look (sett 0 til 1)
 (menu-bar-mode 1)      ;; Skjuler menyen
 (tool-bar-mode 1)      ;; Skjuler toolbar
-(scroll-bar-mode 1)    ;; Skjuler scrollbar
+(scroll-bar-mode 0)    ;; Skjuler scrollbar
 
 ;; Ender kommentarfargen til lilla
 (set-face-foreground 'font-lock-comment-face "violet")
@@ -21,8 +21,8 @@
 (setq inhibit-startup-message t)
 
 ;; Adds closing parents automatically
-(electric-pair-mode 1)
-(add-to-list 'electric-pair-pairs '(?\{ . ?\}))
+;;(electric-pair-mode 1)
+;;(add-to-list 'electric-pair-pairs '(?\{ . ?\}))
 
 
 ;; JAVATING''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -60,3 +60,14 @@
 (setq c-default-style "linux"
       c-basic-offset 4)
 
+
+;; To tidy up a buffer we define this function borrowed from [[https://github.com/simenheg][simenheg]].
+(defun tidy ()
+"Ident, untabify and unwhitespacify current buffer, or region if active."
+(interactive)
+(let ((beg (if (region-active-p) (region-beginning) (point-min)))
+(end (if (region-active-p) (region-end) (point-max))))
+(indent-region beg end)
+(whitespace-cleanup)
+(untabify beg (if (< end (point-max)) end (point-max)))))
+(global-set-key (kbd "<C-tab>") 'tidy)
