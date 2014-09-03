@@ -8,6 +8,7 @@ Kopier:    	     	  	  Alt+w
 Lim inn:			  Ctrl+y
 
 Merk alt:			  Ctrl+x h
+Gå til linje:			  Alt-g g
 
 Dele skjermen i 2 vertikalt:	  Ctrl+x 3
 Sele skjermen i 2 horisontalt:	  Ctrl+x 2
@@ -16,6 +17,9 @@ Gjenopprette til fra delt skjerm: Ctrl+x 1
 Slett linje (Blir kopiert):	  Ctrl+k
 Bytte mellom buffere:		  Ctrl+ (pilvenstre eller høyre)
 
+Lukk gjeldende buffer:		  Ctrl+x k
+Lukk Emacs:  			  Ctrl+x Ctrl+c
+
 
 Hvis linjen nederst henger seg opp i en kommando eller begynner
 å mase, trykk Ctrl+G eller Esc Esc Esc
@@ -23,3 +27,5 @@ Hvis linjen nederst henger seg opp i en kommando eller begynner
 
 Husk at i linux kopierer man ved å merke tekst.
 Lim inn med midtre museknapp.
+
+Konfigurasjonsfilen heter .emacs og ligger på hjemmeområdet ditt.
