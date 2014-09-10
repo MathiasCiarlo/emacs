@@ -1,3 +1,6 @@
+Konfigurasjonsfilen til emacs ligger på hjemmeområdet ditt og heter .emacs
+Her kan du aktivere toolbar og grafiske ting hvis du vil.
+
 Hotkeys:
 
 Åpne fil / lage ny fil:		  Ctrl+x Ctrl+f
@@ -15,17 +18,35 @@ Sele skjermen i 2 horisontalt:	  Ctrl+x 2
 Gjenopprette til fra delt skjerm: Ctrl+x 1
 
 Slett linje (Blir kopiert):	  Ctrl+k
-Bytte mellom buffere:		  Ctrl+ (pilvenstre eller høyre)
+Bytte mellom buffere:		  Ctrl+x (pilvenstre eller høyre)
+Bytte fokus mellom viduer:	  Alt+ (pilvenstre eller høyre)
+
 
 Lukk gjeldende buffer:		  Ctrl+x k
 Lukk Emacs:  			  Ctrl+x Ctrl+c
 
 
-Hvis linjen nederst henger seg opp i en kommando eller begynner
+Hvis linjen nederst (minibufferet) henger seg opp i en kommando eller begynner
 å mase, trykk Ctrl+G eller Esc Esc Esc
 
 
-Husk at i linux kopierer man ved å merke tekst.
-Lim inn med midtre museknapp.
+Åpne terminal i emacs:	       	   Alt+x shell
+- Hvis du vil gjenta tidligere kommandoer, bruk Ctrl+pilopp
+
+
+Nerdekommandoer for å unngå å flytte hendene og å dermed skrive fortere:
+Flytting av cursor:
+Venstre:			Ctrl+b (Back)
+Høyre:				Ctrl+f (Forward)
+Opp:				Ctrl+p (Previous)
+Ned:	    			Ctrl+n (Next)
+Hopp til starten av linjen:	Ctrl+a (Kremt..)
+Hopp til slutten av linjen:	Ctrl+e (End)
+
+Legge til ny linje under:	Ctrl+o
+
 
 Konfigurasjonsfilen heter .emacs og ligger på hjemmeområdet ditt.
+
+Husk at i linux kopierer man ved å merke tekst.
+Lim inn med midtre museknapp.
