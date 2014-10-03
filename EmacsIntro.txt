@@ -18,7 +18,10 @@ Sele skjermen i 2 horisontalt:	  Ctrl+x 2
 Gjenopprette til fra delt skjerm: Ctrl+x 1
 
 Slett linje (Blir kopiert):	  Ctrl+k
+
 Bytte mellom buffere:		  Ctrl+x (pilvenstre eller høyre)
+Vise alle buffere: 		  Ctrl+x b
+
 Bytte fokus mellom viduer:	  Alt+ (pilvenstre eller høyre)
 
 
