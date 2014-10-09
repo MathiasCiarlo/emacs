@@ -12,6 +12,7 @@
   (newline)(yank)(newline)
   (insert "```")(newline))
 
+
 ;; Smart for getting stuff on devilry, but not on disk
 (defun devilry-add-old-feedback()
   (interactive)
@@ -39,23 +40,14 @@
   (delete-other-windows))
 
 
-;; Shows the readme buffer if it exists
-(defun devilry-show-readme()
-  (interactive)
-  (let ((readme-buffer
-         (member "readme.txt"
-                 (mapcar (lambda (buf) (downcase (buffer-name buf)))
-                         (buffer-list)))))
-    (when readme-buffer
-      (switch-to-buffer (first readme-buffer)))))
-
-
 ;; Shows readme buffer if it exists
 (defun devilry-show-readme()
   (interactive)
   (if (get-buffer "README.txt")
     (switch-to-buffer "README.txt")
     (message "Could not find README.txt")))
+
+(add-hook 'Devilry-mode-hook 'devilry-show-readme)
 
 
 ;; Inserts the template and adds username et end of first line
@@ -66,11 +58,9 @@
   (move-beginning-of-line nil))
 
 
-;; Create a feedback file in the right folder
-;; Inserts a feedback template
+;; Create a new feedback file in the right folder
+;; Splits windows and shows the two previous feedback files
 (defun devilry-create-new-and-show-last-feedback()
-  (interactive)
-
   ;; Get username
   (setq username (read-string "Skriv inn brukernavn: "))
 
@@ -78,7 +68,7 @@
   (while (not (file-exists-p (concat feedback-dir-path username)))
     (setq username (read-string (concat "Skriv inn et gyldig brukernavn. (Må ligge i mappen" feedback-dir-path "): "))))
 
-  ;; System spesific strings!
+  ;; Calculate paths to new and previous feedback files
   (setq newFilePath (concat feedback-dir-path username "/" oblig-number ".txt"))
   (setq prevFilePath (concat feedback-dir-path username "/" (number-to-string (- (string-to-number oblig-number) 1)) ".txt"))
   (setq oldFilePath (concat feedback-dir-path username "/"  (number-to-string (- (string-to-number oblig-number) 2)) ".txt"))
@@ -142,37 +132,65 @@
 
 ;; Writes updated data to file
 (defun write-data ()
-  (interactive)
+  ;; Make a driectory for the data file if it does not exist
+  (when (not (file-exists-p "~/.emacs.d/site-lisp/devilry-mode/"))
+    (shell-command "mkdir -p ~/.emacs.d/site-lisp/devilry-mode"))
+
+  ;; Construct data-string for file-insertion
   (let ((str (concat feedback-dir-path "\n" feedback-template-path "\n" oblig-number)))
+    ;; Write to file
     (write-region str nil "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.data")
     (message "Updated data (devilry-mode.data)")))
 
 
-;; Gets info from file
+;; Gets data from file
 (defun read-data ()
   (with-temp-buffer
-    (insert-file-contents "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.data")
+    (when (file-exists-p "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.data")
+      (insert-file-contents "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.data")
 
-    (let ((beg (point))) (end-of-line) (copy-region-as-kill beg (point)))
-    (setq feedback-dir-path (car kill-ring-yank-pointer))
-    (let ((beg (progn (goto-line 2) (point)))) (end-of-line) (copy-region-as-kill beg (point)))
-    (setq feedback-template-path (car kill-ring-yank-pointer))
-    (let ((beg (progn (goto-line 3) (point)))) (end-of-line) (copy-region-as-kill beg (point)))
-    (setq oblig-number (car kill-ring-yank-pointer))))
+      (let ((beg (point))) (end-of-line) (copy-region-as-kill beg (point)))
+      (setq feedback-dir-path (car kill-ring-yank-pointer))
+      (let ((beg (progn (goto-line 2) (point)))) (end-of-line) (copy-region-as-kill beg (point)))
+      (setq feedback-template-path (car kill-ring-yank-pointer))
+      (let ((beg (progn (goto-line 3) (point)))) (end-of-line) (copy-region-as-kill beg (point)))
+      (setq oblig-number (car kill-ring-yank-pointer)))))
 
 
 ;; Initiates the system
 (defun devilry-init ()
   (read-data)
-  (when (y-or-n-p (concat "Change oblig number? (" oblig-number ") "))
-    (setq oblig-number (read-string "Which oblig is it then? ")))
 
-  (when (y-or-n-p (concat "Change feedback directory? (" feedback-dir-path ") "))
-    (setq feedback-dir-path (read-string "Path to feedback directory: ")))
+  ;; Check if we need to write to file
+  (let ((data-updated nil))
+    ;; Check if not file exists
+    (if (not (file-exists-p "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.data"))
+	(progn
+	  (message "Data file \"devilry-mode.data\" does not exist")
+	  (setq oblig-number (read-string "Oblig number: "))
+	  (setq feedback-dir-path (read-string "Path to feedback directory: "))
+	  (setq feedback-template-path (read-string "Path to feedback template: "))
 
-  (when (y-or-n-p (concat "Change feedback template path? (" feedback-template-path ") "))
-    (setq feedback-dir-path (read-string "Path to feedback template: "))))
+	  (setq data-updated t))
+      
+      ;; Check if user wants to update data, i.e new template path
+      (when (y-or-n-p (concat "Change oblig number? (is " oblig-number ") "))
+	(setq oblig-number (read-string "Oblig number: "))
+	(setq data-updated t))
+      
+      (when (y-or-n-p (concat "Change feedback directory? (is " feedback-dir-path ") "))
+	(setq feedback-dir-path (read-string "Path to feedback directory: "))
+	(setq data-updated t))
+      
+      (when (y-or-n-p (concat "Change feedback template path? (is " feedback-template-path ") "))
+	(setq feedback-template-path (read-string "Path to feedback template: "))
+	(setq data-updated t)))
 
+    ;; If we have new varables or could not find data we have to write to file
+    (when data-updated
+      (write-data))))
+
+;; The mode
 (define-minor-mode devilry-mode
   nil
   :lighter " Devilry"
@@ -186,7 +204,6 @@
             (define-key map (kbd "C-, y") 'devilry-yank-java-block)
             map)
   ;; This will be run every time the mode is toggled on or off
-
-  ;; If we toggled the mode on:
+  ;; If we toggled the mode on, run init function
   (when (and devilry-mode (boundp 'devilry-mode))
     (devilry-init)))
