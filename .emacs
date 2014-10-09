@@ -1,7 +1,10 @@
 ;; Emacs config file, name must be .emacs and must lie in your home folder
-;; All honour goes to Lars Tveito (Emacs Guru), he has tought me all I know.
+;; Much honour goes to Lars Tveito (Emacs Guru), he has tought me all I know.
+
 (require 'cl)
 (require 'package)
+(require 'iso-transl) ; Fixes dead keys
+
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.milkbox.net/packages/"))
 
@@ -19,6 +22,11 @@
   (when packages
     (package-refresh-contents)
     (mapc 'package-install packages)))
+
+
+(add-to-list 'load-path "~/.emacs.d/site-lisp/")
+(when (file-exists-p "~/.emacs.d/site-lisp/devilry-mode.el")
+  (load-library "devilry-mode"))
 
 ;; Show files beneth
 (ido-vertical-mode 1)
@@ -42,7 +50,7 @@
 
 
 (setq
- auto-save-default                        t ; nil to disable auto-save
+ auto-save-default                      t ; nil to disable auto-save
  c-default-style                    "linux" ; Nice c indention.
  c-basic-offset                           4 ; Indentation
  default-directory                     "~/" ; Default home directory
@@ -51,36 +59,52 @@
  ring-bell-function                 'ignore ; Stop annoying system ringing noice
  )
 
+
+;; To avoid file system clutter we put all auto saved files in a single
+;; directory.
+(defvar emacs-autosave-directory
+  (concat user-emacs-directory "autosaves/")
+  "This variable dictates where to put auto saves. It is set to a
+directory called autosaves located wherever your .emacs.d/ is
+located.")
+
+(setq backup-directory-alist
+      `((".*" . ,emacs-autosave-directory))
+      auto-save-file-name-transforms
+      `((".*" ,emacs-autosave-directory t)))
+
+
 ;; Basic looks
 (blink-cursor-mode 0)  ; Self explainatory
 (column-number-mode 1) ; Shows column number at the bottom
-(global-linum-mode 1)  ; Shows line number on the left hand side
+(global-linum-mode 0)  ; Shows line number on the left hand side
 (show-paren-mode 1)    ; Marks matching paranthesis
 
 
 ;; Setting default text size
-;;(set-face-attribute 'default nil :height 120) ; Useful on high dpi screens
+;;(set-face-attribute 'default nil :height 120) ; Useful on high dpi screens on windows
 
 
 ;; Less toolbars, more text. We have shortcuts
-(menu-bar-mode 1)      ; Hide menu
-(tool-bar-mode 1)      ; HIde toolbar
+(menu-bar-mode 0)      ; Hide menu
+(tool-bar-mode 0)      ; HIde toolbar
 (scroll-bar-mode 0)    ; Hide scrollbar
+
 
 ;; Adds closing parents automatically
 (electric-pair-mode 1)
 (add-to-list 'electric-pair-pairs '(?\{ . ?\}))
 
+;; Answer yes or no with y or n
+(fset 'yes-or-no-p 'y-or-n-p)
 
 ;; Overwrite marked text
 (delete-selection-mode 1)
 
 ;; enable ido-mode, changes the way files are selected in the minibuffer
 (ido-mode 1)
-
 ;; use ido everywhere
 (ido-everywhere 1)
-
 ;; show vertically
 (ido-vertical-mode 1)
 
@@ -108,20 +132,6 @@
 (add-hook 'java-mode-hook 'java-shortcuts)
 
 
-;; To avoid file system clutter we put all auto saved files in a single
-;; directory.
-(defvar emacs-autosave-directory
-  (concat user-emacs-directory "autosaves/")
-  "This variable dictates where to put auto saves. It is set to a
-directory called autosaves located wherever your .emacs.d/ is
-located.")
-
-(setq backup-directory-alist
-      `((".*" . ,emacs-autosave-directory))
-      auto-save-file-name-transforms
-      `((".*" ,emacs-autosave-directory t)))
-
-
 ;; Change focus between windows in emacs with Alt-left and Alt-right
 (defun select-next-window ()
   "Switch to the next window"
@@ -134,8 +144,7 @@ located.")
   (select-window (previous-window)))
 
 
-;; To tidy up a buffer we define this function borrowed from
-;; [[https://github.com/simenheg][simenheg]].
+;; To tidy up a buffer we define this function borrowed from simenheg
 (defun tidy ()
   "Ident, untabify and unwhitespacify current buffer, or region if active."
   (interactive)
@@ -161,18 +170,14 @@ located.")
   (kill-buffer "*shell*"))
 
 
-;; Kill everything without saving
-(defun desktop-hard-clear ()
+;; Tidy all buffers that are not read-only
+(defun tidy-all-buffers()
   (interactive)
   (dolist (buffer (buffer-list))
-    (let ((process (get-buffer-process buffer)))
-      (when process (process-kill-without-query process))
-      (set-buffer buffer)
-      (set-buffer-modified-p nil)
-      (kill-this-buffer)))
-  (delete-other-windows))
-
-
+    (with-current-buffer buffer
+      (switch-to-buffer buffer)
+      (when (eq buffer-read-only nil)
+        (tidy)))))
 
 ;; Full screen
 (defun toggle-fullscreen ()
@@ -195,6 +200,5 @@ located.")
 (global-set-key [f11] 'toggle-fullscreen)
 
 (global-set-key (kbd "C-c e")  'mc/edit-lines)
-
 (global-set-key (kbd "C-c a")  'mc/mark-all-like-this)
 (global-set-key (kbd "C-c n")  'mc/mark-next-like-this)
