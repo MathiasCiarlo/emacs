@@ -1,3 +1,18 @@
+;; Smart for getting stuff on devilry, but not on disk
+(defun devilry-add-old-feedback()
+  (interactive)
+  (save-buffer)
+  (kill-buffer)
+  ;; Get username and create feedback-file
+  (setq username (read-string "Skriv inn brukernavn: "))
+  ;; Ask for a real username
+  (while (string= username "")
+    (setq username (read-string "Skriv inn et ordentlig brukernavn: ")))
+  (shell-command (concat "touch" feedback-dir-path username "/3.txt"))
+  ;; Open the file in the new window
+  (find-file (concat feedback-dir-path username "/3.txt")))
+
+
 ;; Kill everything without saving
 ;; By Lars Tveito
 (defun desktop-hard-clear ()
@@ -31,15 +46,10 @@
   (move-beginning-of-line nil))
 
 
-;; ***OBLIG-AVHENGIG! MÅ ENDRES FOR HVER OBLIG***
 ;; Create a feedback file in the right folder
 ;; Inserts a feedback template
 (defun devilry-create-new-and-show-last-feedback()
   (interactive)
-
-  ;; Feedback directory (SYSTEM-SPESIFIC)
-  ;;(setq feedback-dir-path "~/grl/inf1000/oblig/feedback/")
-  ;;(setq feedback-template-path "")
 
   ;; Get username
   (setq username (read-string "Skriv inn brukernavn: "))
@@ -49,9 +59,9 @@
     (setq username (read-string (concat "Skriv inn et gyldig brukernavn. (Må ligge i mappen" feedback-dir-path "): "))))
 
   ;; System spesific strings!
-  (setq newFilePath (concat feedback-dir-path username "/5.txt"))
-  (setq prevFilePath (concat feedback-dir-path username "/4.txt"))
-  (setq oldFilePath (concat feedback-dir-path username "/3.txt"))
+  (setq newFilePath (concat feedback-dir-path username "/" oblig-number ".txt"))
+  (setq prevFilePath (concat feedback-dir-path username "/" (number-to-string (- (string-to-number oblig-number) 1)) ".txt"))
+  (setq oldFilePath (concat feedback-dir-path username "/"  (number-to-string (- (string-to-number oblig-number) 2)) ".txt"))
 
   ;; Create the new feedback-file
   (shell-command (concat "touch " newFilePath))
@@ -90,21 +100,6 @@
   (insert "```")(newline))
 
 
-;; ***OBLIG-AVHENGIG! MÅ ENDRES FOR HVER OBLIG***
-(defun devilry-add-old-feedback()
-  (interactive)
-  (save-buffer)
-  (kill-buffer)
-  ;; Get username and create feedback-file
-  (setq username (read-string "Skriv inn brukernavn: "))
-  ;; Ask for a real username
-  (while (string= username "")
-    (setq username (read-string "Skriv inn et ordentlig brukernavn: ")))
-  (shell-command (concat "touch" feedback-dir-path username "/3.txt"))
-  ;; Open the file in the new window
-  (find-file (concat feedback-dir-path username "/3.txt")))
-
-
 ;; Compile all java files, then delete output files
 ;; Tidy everything
 ;; Find README and switch to that buffer
@@ -139,21 +134,6 @@
     (kill-buffer "*Completions*"))
   (when (eq (buffer-size (get-buffer "*Shell Command Output*")) 0)
     (kill-buffer (get-buffer "*Shell Command Output*"))))
-
-
-
-(defun devilry-add-old-feedback()
-  (interactive)
-  (save-buffer)
-  (kill-buffer)
-  ;; Get username and create feedback-file
-  (setq username (read-string "Skriv inn brukernavn: "))
-  ;; Ask for a real username
-  (while (string= username "")
-    (setq username (read-string "Skriv inn et ordentlig brukernavn: ")))
-  (shell-command (concat "touch" feedback-dir-path username "/3.txt"))
-  ;; Open the file in the new window
-  (find-file (concat feedback-dir-path username "/3.txt")))
 
 
 ;; Gets info from file
