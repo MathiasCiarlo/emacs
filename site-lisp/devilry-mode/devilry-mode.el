@@ -49,12 +49,14 @@
     (when readme-buffer
       (switch-to-buffer (first readme-buffer)))))
 
+
 ;; Shows readme buffer if it exists
 (defun devilry-show-readme()
   (interactive)
   (if (get-buffer "README.txt")
     (switch-to-buffer "README.txt")
     (message "Could not find README.txt")))
+
 
 ;; Inserts the template and adds username et end of first line
 (defun insert-devilry-template (username file-path)
@@ -141,8 +143,10 @@
 ;; Writes updated data to file
 (defun write-data ()
   (interactive)
-  (let ((str)) (concat feedback-dir-path "\n" feedback-template-path "\n" oblig-number)
-       (write-region str nil "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.data")))
+  (let ((str (concat feedback-dir-path "\n" feedback-template-path "\n" oblig-number)))
+    (write-region str nil "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.data")
+    (message "Updated data (devilry-mode.data)")))
+
 
 ;; Gets info from file
 (defun read-data ()
