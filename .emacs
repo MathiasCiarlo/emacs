@@ -1,9 +1,9 @@
-;; Emacs config file, name must be .emacs and must lie in your home folder
-;; Much honour goes to Lars Tveito (Emacs Guru), he has tought me all I know.
+;; Emacs config file, filename must be .emacs and must lie in your home folder
+;; Much honour goes to Lars Tveito (Emacs Guru), he has taught me all I know.
 
 (require 'cl)
 (require 'package)
-(require 'iso-transl) ; Fixes dead keys
+(require 'iso-transl) ; Fixes dead keys on ubuntu, ish
 
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.milkbox.net/packages/"))
@@ -23,10 +23,16 @@
     (package-refresh-contents)
     (mapc 'package-install packages)))
 
-
-(add-to-list 'load-path "~/.emacs.d/site-lisp/")
-(when (file-exists-p "~/.emacs.d/site-lisp/devilry-mode.el")
+;; Devilry-mode
+(add-to-list 'load-path "~/.emacs.d/site-lisp/devilry-mode/")
+(when (file-exists-p "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.el")
   (load-library "devilry-mode"))
+
+;; E-type
+(add-to-list 'load-path "~/.emacs.d/plugins/e-type/")
+(when (file-exists-p "~/.emacs.d/plugins/e-type/etype.el")
+  (load-library "etype"))
+
 
 ;; Show files beneth
 (ido-vertical-mode 1)
@@ -50,7 +56,7 @@
 
 
 (setq
- auto-save-default                      t ; nil to disable auto-save
+ auto-save-default                        t ; nil to disable auto-save
  c-default-style                    "linux" ; Nice c indention.
  c-basic-offset                           4 ; Indentation
  default-directory                     "~/" ; Default home directory
@@ -77,7 +83,7 @@ located.")
 ;; Basic looks
 (blink-cursor-mode 0)  ; Self explainatory
 (column-number-mode 1) ; Shows column number at the bottom
-(global-linum-mode 0)  ; Shows line number on the left hand side
+(global-linum-mode 1)  ; Shows line number on the left hand side
 (show-paren-mode 1)    ; Marks matching paranthesis
 
 
@@ -87,7 +93,7 @@ located.")
 
 ;; Less toolbars, more text. We have shortcuts
 (menu-bar-mode 0)      ; Hide menu
-(tool-bar-mode 0)      ; HIde toolbar
+(tool-bar-mode 1)      ; HIde toolbar
 (scroll-bar-mode 0)    ; Hide scrollbar
 
 
