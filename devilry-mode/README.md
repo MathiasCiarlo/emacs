@@ -2,7 +2,7 @@
 
 ##Om
 Devilry-mode gjør det enklere å rette obliger. Når du begynner å rette en oblig vises kommer det opp en feedback-template, samt de to forrige tilbakemeldingene til studenten. Dette gjør at man kan gi mye bedre tilbakemeldinger. Deretter vises README.txt og alle javafiler kompileres, ved kompileringsfeil vises disse.
-Foreløpig fungerer det kun for java-obliger, med det kan enkelt endres.
+Foreløpig fungerer det kun for java-obliger, men det kan enkelt endres.
 
 
 ##Installering
