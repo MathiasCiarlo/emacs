@@ -1,11 +1,15 @@
-(defun devilry-bold()
+;; To tidy up a buffer, created by simenheg
+(defun tidy ()
+  "Ident, untabify and unwhitespacify current buffer, or region if active."
   (interactive)
-  (insert "****")(backward-char) (backward-char))
+  (let ((beg (if (region-active-p) (region-beginning) (point-min)))
+        (end (if (region-active-p) (region-end) (point-max))))
+    (indent-region beg end)
+    (whitespace-cleanup)
+    (untabify beg (if (< end (point-max)) end (point-max)))))
 
-(defun devilry-italic()
-  (interactive)
-  (insert "**")(backward-char))
 
+;; Yank inside devilry-markdown code block
 (defun devilry-yank-java-block()
   (interactive)
   (insert "``` java")
@@ -23,10 +27,15 @@
   ;; Ask for a real username
   (while (string= username "")
     (setq username (read-string "Skriv inn et ordentlig brukernavn: ")))
-  (shell-command (concat "touch" feedback-dir-path username "/3.txt"))
-  ;; Open the file in the new window
-  (find-file (concat feedback-dir-path username "/3.txt")))
 
+  ;; Open the file in the new window
+  (find-file (concat feedback-dir-path username "/<oblignr>.txt")))
+
+
+;; Activating markdown-mode if installed
+(defun safe-markdown-mode()
+  (when (require 'markdown-mode nil 'noerror)
+    (markdown-mode)))
 
 ;; Kill everything without saving
 (defun desktop-hard-clear ()
@@ -41,100 +50,120 @@
 
 
 ;; Shows readme buffer if it exists
+;; This is kind of horrible
 (defun devilry-show-readme()
   (interactive)
   (if (get-buffer "README.txt")
-    (switch-to-buffer "README.txt")
-    (message "Could not find README.txt")))
-
-(add-hook 'Devilry-mode-hook 'devilry-show-readme)
+      (switch-to-buffer "README.txt")
+    (if (get-buffer "Readme.txt")
+        (switch-to-buffer "Readme.txt")
+      (if (get-buffer "readme.txt")
+          (switch-to-buffer "readme.txt")
+        (if (get-buffer "README.TXT")
+            (switch-to-buffer "README.TXT")
+          (message "Could not find README.txt"))))))
 
 
 ;; Inserts the template and adds username et end of first line
 (defun insert-devilry-template (username file-path)
   (insert-file-contents file-path)
   (move-end-of-line nil)
-  (insert username)
+  (insert " - " username)
+  (end-of-buffer)
+  (insert (concat "\nRettet: " (current-time-string)))
   (move-beginning-of-line nil))
 
 
 ;; Create a new feedback file in the right folder
 ;; Splits windows and shows the two previous feedback files
-(defun devilry-create-new-and-show-last-feedback()
+(defun devilry-create-new-and-show-old-feedback()
   ;; Get username
   (setq username (read-string "Skriv inn brukernavn: "))
 
   ;; Ask until we get a valid username
   (while (not (file-exists-p (concat feedback-dir-path username)))
-    (setq username (read-string (concat "Skriv inn et gyldig brukernavn. (Må ligge i mappen" feedback-dir-path "): "))))
+    (if (yes-or-no-p (concat "Can't find directory " feedback-dir-path username ". Create it?"))
+        (make-directory (concat feedback-dir-path username) t)
+      (setq username (read-string
+                      (concat "Please give a valid username. (Must be a folder in path "
+                              feedback-dir-path "): ")))))
 
-  ;; Calculate paths to new and previous feedback files
+  ;; Calculate paths to new and the two previous feedback files
   (setq newFilePath (concat feedback-dir-path username "/" oblig-number ".txt"))
-  (setq prevFilePath (concat feedback-dir-path username "/" (number-to-string (- (string-to-number oblig-number) 1)) ".txt"))
-  (setq oldFilePath (concat feedback-dir-path username "/"  (number-to-string (- (string-to-number oblig-number) 2)) ".txt"))
+  (setq prevFilePath (concat feedback-dir-path username "/"
+                             (number-to-string (- (string-to-number oblig-number) 1)) ".txt"))
+  (setq oldFilePath (concat feedback-dir-path username "/"
+                            (number-to-string (- (string-to-number oblig-number) 2)) ".txt"))
 
-  ;; Create the new feedback-file
-  (shell-command (concat "touch " newFilePath))
+  ;; Create new feedback-file or open it if it exists
+  (find-file newFilePath)
 
-  ;; Open new window to the right
-  (setq window (split-window-right))
-
-  ;; Open the file in the new window and show previous feedback below if it exists
-  (with-selected-window window
+  (with-selected-window (split-window-right)
     (find-file newFilePath)
-    (insert-devilry-template username feedback-template-path)
 
-    (with-selected-window (split-window-below)
-      (when (file-exists-p prevFilePath)
-        (find-file-read-only prevFilePath)
-        (end-of-buffer))
+    ;; Check if we have been editing this feedback file before
+    (when (eq (buffer-size) 0)
+      (insert-devilry-template username feedback-template-path))
+
+    (safe-markdown-mode)
+
+    ;; Split window again if old feedback-file exists
+    (when (file-exists-p prevFilePath)
       (with-selected-window (split-window-below)
+        (find-file-read-only prevFilePath)
+        (end-of-buffer)
+
+        ;; Activating markdown-mode
+        (safe-markdown-mode)
+
         (when (file-exists-p oldFilePath)
-          (find-file-read-only oldFilePath)
-          (end-of-buffer))))))
+          (with-selected-window (split-window-below)
+            (find-file-read-only oldFilePath)
+            (end-of-buffer)
+
+            ;; Activating markdown-mode
+            (safe-markdown-mode)))))))
 
 
-;; Compile all java files, then delete output files
-;; Tidy everything
+;; Compile all java files
+;; Remove output .class files
 ;; Find README and switch to that buffer
-;; Also close unneccesary buffers
-(defun devilry-grl-inf1000 ()
+(defun devilry-do-oblig ()
   (interactive)
   (delete-other-windows)
-  (tidy-all-buffers)
+
+  ;; Uncomment this line to indent everything correctly
+  ;;(tidy-all-buffers)
 
   ;; Create new and show previous feedback files on the right
-  (devilry-create-new-and-show-last-feedback)
+  (devilry-create-new-and-show-old-feedback)
 
   ;; Show readme if it exists
   (devilry-show-readme)
 
-  ;; Try to compile, show errors below
-  (shell-command "javac *.java")
-  ;; If compilation was successful,
-  (if (eq (buffer-size (get-buffer "*Shell Command Output*")) 0)
-      (progn
-        (message "Compilation completed sucessfully, deleted .class files")
-        ;; Delete .class files after compilation
-        (if (eq system-type 'windows-nt)
-            (shell-command "del *.class")
-          (shell-command "rm *.class")))
-    ;; Else show errors below
-    (setq window (split-window-below))
-    (set-window-buffer window "*Shell Command Output*"))
+  ;; Try to compile, show eventual errors below. Shell command output buffer opens
+  ;;  in last modified window or something, tried to hack it. It somehow works
+  (let ((output-window (split-window-below)))
+    (shell-command "javac *.java")
+    (if (not (eq (buffer-size (get-buffer "*Shell Command Output*")) 0))
+        (progn
+          (message "Compilation gave errors.")
+          (with-selected-window output-window (pop-to-buffer-same-window "*Shell Command Output*")))
+      (delete-window output-window)
+      (message "Compilation completed sucessfully.")
 
-  ;; Kill unnessesary buffers
-  (when (not(eq (get-buffer "*Completions*") nil))
-    (kill-buffer "*Completions*"))
-  (when (eq (buffer-size (get-buffer "*Shell Command Output*")) 0)
-    (kill-buffer (get-buffer "*Shell Command Output*"))))
-
+      ;; Uncomment this to delete output files after compilation
+      ;;(message "Deleting output files.")
+      ;;(if (eq system-type 'windows-nt)
+      ;;    (shell-command "del *.class")
+      ;;  (shell-command "rm *.class"))
+      )))
 
 ;; Writes updated data to file
 (defun write-data ()
-  ;; Make a driectory for the data file if it does not exist
-  (when (not (file-exists-p "~/.emacs.d/site-lisp/devilry-mode/"))
-    (shell-command "mkdir -p ~/.emacs.d/site-lisp/devilry-mode"))
+  ;; Make a directory for the data file if it does not exist
+  (unless (file-exists-p "~/.emacs.d/site-lisp/devilry-mode/")
+    (make-directory "~/.emacs.d/site-lisp/devilry-mode" t))
 
   ;; Construct data-string for file-insertion
   (let ((str (concat feedback-dir-path "\n" feedback-template-path "\n" oblig-number)))
@@ -165,30 +194,45 @@
   (let ((data-updated nil))
     ;; Check if not file exists
     (if (not (file-exists-p "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.data"))
-	(progn
-	  (message "Data file \"devilry-mode.data\" does not exist")
-	  (setq oblig-number (read-string "Oblig number: "))
-	  (setq feedback-dir-path (read-string "Path to feedback directory: "))
-	  (setq feedback-template-path (read-string "Path to feedback template: "))
+        (progn
+          (message "Data file \"devilry-mode.data\" does not exist")
+          (setq oblig-number (read-string "Oblig number: "))
+          (setq feedback-dir-path (read-string "Path to feedback directory: "))
+          (setq feedback-template-path (read-string "Path to feedback template: "))
+          (setq data-updated t))
 
-	  (setq data-updated t))
-      
       ;; Check if user wants to update data, i.e new template path
       (when (y-or-n-p (concat "Change oblig number? (is " oblig-number ") "))
-	(setq oblig-number (read-string "Oblig number: "))
-	(setq data-updated t))
-      
+        (setq oblig-number (read-string "Oblig number: "))
+        (setq data-updated t))
+
       (when (y-or-n-p (concat "Change feedback directory? (is " feedback-dir-path ") "))
-	(setq feedback-dir-path (read-string "Path to feedback directory: "))
-	(setq data-updated t))
-      
+        (setq feedback-dir-path (read-string "Path to feedback directory: "))
+        (setq data-updated t))
+
       (when (y-or-n-p (concat "Change feedback template path? (is " feedback-template-path ") "))
-	(setq feedback-template-path (read-string "Path to feedback template: "))
-	(setq data-updated t)))
+        (setq feedback-template-path (read-string "Path to feedback template: "))
+        (setq data-updated t)))
+
+    ;; Check if the paths are valid, if not, ask to create directories
+    (while (not (file-exists-p feedback-dir-path))
+      (if (yes-or-no-p (concat "Feedback directory does not exist (" feedback-dir-path "). Create it? "))
+          (make-directory feedback-dir-path t)
+        (setq feedback-dir-path (read-string "Path to feedback directory: "))))
+
+    (while (not (file-exists-p feedback-template-path))
+      (if (yes-or-no-p (concat "Feedback template does not exist (" feedback-template-path "). Create it? "))
+          (progn
+            ;; Creating feedback file, making sure the parent directories exist
+            (let ((dir (file-name-directory feedback-template-path)))
+              (unless (file-exists-p dir) (make-directory dir t)))
+            (write-region (concat "#<course code> - Oblig " oblig-number "\n##<task1>\n##<task2>\n...\n##Generally:\n\n\n###**Approved**") nil feedback-template-path))
+        (setq feedback-template-path (read-string "Path to feedback directory: "))))
 
     ;; If we have new varables or could not find data we have to write to file
     (when data-updated
       (write-data))))
+
 
 ;; The mode
 (define-minor-mode devilry-mode
@@ -197,13 +241,13 @@
   :global t
   :init-value nil
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "<f5>") 'devilry-grl-inf1000)
+            (define-key map (kbd "<f5>") 'devilry-do-oblig)
             (define-key map (kbd "<f6>") 'desktop-hard-clear)
-            (define-key map (kbd "C-, b") 'devilry-bold)
-            (define-key map (kbd "C-, i") 'devilry-italic)
             (define-key map (kbd "C-, y") 'devilry-yank-java-block)
             map)
   ;; This will be run every time the mode is toggled on or off
   ;; If we toggled the mode on, run init function
   (when (and devilry-mode (boundp 'devilry-mode))
     (devilry-init)))
+
+(provide 'devilry-mode)
