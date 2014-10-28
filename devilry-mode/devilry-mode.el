@@ -1,3 +1,11 @@
+;; Change nil to t if you want automatic indentation
+;;  every time you start correcting an oblig
+(setq devilry-indent-code nil)
+
+;; Change nil to t if you want to delete .class files after compilation
+(setq devilry-rm-output-files nil)
+
+
 ;; To tidy up a buffer, created by simenheg
 (defun tidy ()
   "Ident, untabify and unwhitespacify current buffer, or region if active."
@@ -132,8 +140,8 @@
   (interactive)
   (delete-other-windows)
 
-  ;; Uncomment this line to indent everything correctly
-  ;;(tidy-all-buffers)
+  ;; Indent code automatically. Is set at the top of this file.
+  (when devilry-indent-code (tidy-all-buffers))
 
   ;; Create new and show previous feedback files on the right
   (devilry-create-new-and-show-old-feedback)
@@ -152,12 +160,12 @@
       (delete-window output-window)
       (message "Compilation completed sucessfully.")
 
-      ;; Uncomment this to delete output files after compilation
-      ;;(message "Deleting output files.")
-      ;;(if (eq system-type 'windows-nt)
-      ;;    (shell-command "del *.class")
-      ;;  (shell-command "rm *.class"))
-      )))
+      ;; Delete output files after compilation. Is set at top of this file
+      (when devilry-rm-output-files
+	(message "Deleting output files.")
+	(if (eq system-type 'windows-nt)
+	    (shell-command "del *.class")
+	  (shell-command "rm *.class"))))))
 
 ;; Writes updated data to file
 (defun write-data ()
