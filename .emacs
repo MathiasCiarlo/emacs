@@ -25,14 +25,8 @@
 
 ;; Devilry-mode
 (add-to-list 'load-path "~/.emacs.d/site-lisp/devilry-mode/")
-(when (file-exists-p "~/.emacs.d/site-lisp/devilry-mode/devilry-mode.el")
+(when (file-exists-p "~/.emacs.d/plugins/devilry-mode/devilry-mode.el")
   (load-library "devilry-mode"))
-
-;; E-type
-(add-to-list 'load-path "~/.emacs.d/plugins/e-type/")
-(when (file-exists-p "~/.emacs.d/plugins/e-type/etype.el")
-  (load-library "etype"))
-
 
 ;; Show files beneth
 (ido-vertical-mode 1)
