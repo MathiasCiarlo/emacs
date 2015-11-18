@@ -3,30 +3,80 @@
 
 (require 'cl)
 (require 'package)
-(require 'iso-transl) ; Fixes dead keys on ubuntu, ish
-
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/"))
-
 (package-initialize)
+
+;;(require 'iso-transl) ; Fixes dead keys on Ubuntu, ish, run emacs with
+;; env= XMODIFIERS= emacs
+
+(setq package-archives
+      '(("gnu" . "http://elpa.gnu.org/packages/")
+        ("org" . "http://orgmode.org/elpa/")
+        ("melpa" . "http://melpa.milkbox.net/packages/")))
 
 ;; install some packages if missing
 (let* ((packages '(auto-complete
+                   geiser
                    ido-vertical-mode
+                   markdown-mode
                    monokai-theme
                    multiple-cursors
-                   undo-tree
-                   ;; if you want more packages, add them here
+		   paredit
+		   pretty-lambdada
+		   undo-tree
+		   slime
                    ))
        (packages (remove-if 'package-installed-p packages)))
   (when packages
     (package-refresh-contents)
     (mapc 'package-install packages)))
 
+
+
 ;; Devilry-mode
-(add-to-list 'load-path "~/.emacs.d/site-lisp/devilry-mode/")
-(when (file-exists-p "~/.emacs.d/plugins/devilry-mode/devilry-mode.el")
-  (load-library "devilry-mode"))
+(add-to-list 'load-path "~/.emacs.d/plugins/devilry-mode/")
+(require 'devilry-mode)
+
+;; Racket
+(setq geiser-active-implementations '(racket))
+
+;; Pretty lambda
+(add-to-list 'pretty-lambda-auto-modes 'geiser-repl-mode)
+(pretty-lambda-for-modes)
+
+;; Paredit
+(dolist (mode pretty-lambda-auto-modes)
+  ;; add paredit-mode to all mode-hooks
+  (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode))
+
+(dolist (mode '(slime-repl-mode
+		geiser-repl-mode
+		ielm-mode
+		clojure-mode
+		cider-repl-mode))
+  (add-to-list 'pretty-lambda-auto-modes mode))
+(pretty-lambda-for-modes)
+
+
+(defun activate-slime-helper ()
+  (when (file-exists-p "~/.quicklisp/slime-helper.elc")
+    (load (expand-file-name "~/.quicklisp/slime-helper.elc"))
+    (define-key slime-repl-mode-map (kbd "C-l")
+      'slime-repl-clear-buffer))
+  ()
+  (remove-hook 'lisp-mode-hook #'activate-slime-helper))
+
+(add-hook 'lisp-mode-hook #'activate-slime-helper)
+
+(setq inferior-lisp-program "sbcl")
+
+(setq lisp-loop-forms-indentation   6
+      lisp-simple-loop-indentation  2
+      lisp-loop-keyword-indentation 6)
+
+;; E-type
+(add-to-list 'load-path "~/.emacs.d/plugins/e-type/")
+(when (file-exists-p "~/.emacs.d/plugins/e-type/etype.el")
+  (load-library "etype"))
 
 ;; Show files beneth
 (ido-vertical-mode 1)
@@ -41,12 +91,33 @@
 ;; load the default config of auto-complete
 (ac-config-default)
 
+(unless (package-installed-p 'ac-geiser)
+  (package-install 'ac-geiser))
+
+(require 'ac-geiser)
+(add-hook 'geiser-mode-hook 'ac-geiser-setup)
+(add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)
+(eval-after-load "auto-complete"
+  '(add-to-list 'ac-modes 'geiser-repl-mode))
+
 ;; Your theme
 (custom-set-variables
- '(custom-enabled-themes (quote (tango-dark))))
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-enabled-themes (quote (tango-dark)))
+ '(ido-vertical-define-keys (quote C-n-and-C-p-only))
+ '(initial-scratch-message "")
+ '(scroll-error-top-bottom nil)
+ '(send-mail-function (quote smtpmail-send-it))
+ '(set-mark-command-repeat-pop nil)
+ '(shift-select-mode t)
+ '(smtpmail-smtp-server "smtp.uio.no")
+ '(smtpmail-smtp-service 587))
 
-;; Change comment color to violet
-(set-face-foreground 'font-lock-comment-face "violet")
+;; Change comment color to violet - or not
+;;(set-face-foreground 'font-lock-comment-face "violet")
 
 
 (setq
@@ -57,6 +128,7 @@
  inhibit-startup-message                  t ; Removes start-up screen
  initial-scratch-message                 "" ; Removes default scratch text
  ring-bell-function                 'ignore ; Stop annoying system ringing noice
+ word-wrap                                t ; Stop breaking lines splitting words
  )
 
 
@@ -77,7 +149,7 @@ located.")
 ;; Basic looks
 (blink-cursor-mode 0)  ; Self explainatory
 (column-number-mode 1) ; Shows column number at the bottom
-(global-linum-mode 1)  ; Shows line number on the left hand side
+(global-linum-mode 0)  ; Shows line number on the left hand side
 (show-paren-mode 1)    ; Marks matching paranthesis
 
 
@@ -87,7 +159,7 @@ located.")
 
 ;; Less toolbars, more text. We have shortcuts
 (menu-bar-mode 0)      ; Hide menu
-(tool-bar-mode 1)      ; HIde toolbar
+(tool-bar-mode 0)      ; Hide toolbar
 (scroll-bar-mode 0)    ; Hide scrollbar
 
 
@@ -111,12 +183,14 @@ located.")
 ;; use undo-tree-mode globally
 (global-undo-tree-mode 1)
 
+;; Word-wrapping
+(add-hook 'text-mode-hook 'visual-line-mode)
+(add-hook 'help-mode-hook 'visual-line-mode)
 
 ;; Open config-file
 (defun init()
   (interactive)
   (find-file "~/.emacs"))
-
 
 ;; Adding shortcuts to java-mode, writing the shortcut folowed by a
 ;; non-word character will cause an expansion.
@@ -169,7 +243,6 @@ located.")
   (delete-process "*shell*")
   (kill-buffer "*shell*"))
 
-
 ;; Tidy all buffers that are not read-only
 (defun tidy-all-buffers()
   (interactive)
@@ -178,6 +251,7 @@ located.")
       (switch-to-buffer buffer)
       (when (eq buffer-read-only nil)
         (tidy)))))
+
 
 ;; Full screen
 (defun toggle-fullscreen ()
@@ -189,12 +263,37 @@ located.")
      (when (not (frame-parameter nil 'fullscreen)) 'fullboth))))
 
 
+;; Scrolling
+(defun scroll-opp()
+  (interactive)
+  (scroll-down 4))
+(defun scroll-ned()
+  (interactive)
+  (scroll-up 4))
+
+(defun python-compile()
+  (interactive)
+  (save-buffer)
+  (shell-command "python movements.py"))
+(global-set-key (kbd "<f5>") 'python-compile)
+
+;; scroll one line at a time (less "jumpy" than defaults)
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+(setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
+(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+(setq scroll-step 1) ;; keyboard scroll one line at a time
+
+
+(setq word-wrap t)
+
 (global-set-key (kbd "<C-tab>") 'tidy)
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
 (global-set-key (kbd "M-<right>") 'select-next-window)
 (global-set-key (kbd "M-2") 'select-next-window)
 (global-set-key (kbd "M-<left>")  'select-previous-window)
 (global-set-key (kbd "M-1")  'select-previous-window)
+(global-set-key (kbd "M-n") 'scroll-ned)
+(global-set-key (kbd "M-p") 'scroll-opp)
 
 (global-set-key (kbd "RET") 'newline-and-indent)
 (global-set-key [f11] 'toggle-fullscreen)
