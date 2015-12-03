@@ -20,10 +20,10 @@
                    markdown-mode
                    monokai-theme
                    multiple-cursors
-		   paredit
-		   pretty-lambdada
-		   undo-tree
-		   slime
+                   paredit
+                   pretty-lambdada
+                   undo-tree
+                   slime
                    ))
        (packages (remove-if 'package-installed-p packages)))
   (when packages
@@ -33,8 +33,9 @@
 
 
 ;; Devilry-mode
-(add-to-list 'load-path "~/.emacs.d/plugins/devilry-mode/")
-(require 'devilry-mode)
+(when (file-exists-p "~/.emacs.d/plugins/devilry-mode")
+  (add-to-list 'load-path "~/.emacs.d/plugins/devilry-mode/")
+  (require 'devilry-mode))
 
 ;; Racket
 (setq geiser-active-implementations '(racket))
@@ -49,10 +50,10 @@
   (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode))
 
 (dolist (mode '(slime-repl-mode
-		geiser-repl-mode
-		ielm-mode
-		clojure-mode
-		cider-repl-mode))
+                geiser-repl-mode
+                ielm-mode
+                clojure-mode
+                cider-repl-mode))
   (add-to-list 'pretty-lambda-auto-modes mode))
 (pretty-lambda-for-modes)
 
@@ -62,7 +63,6 @@
     (load (expand-file-name "~/.quicklisp/slime-helper.elc"))
     (define-key slime-repl-mode-map (kbd "C-l")
       'slime-repl-clear-buffer))
-  ()
   (remove-hook 'lisp-mode-hook #'activate-slime-helper))
 
 (add-hook 'lisp-mode-hook #'activate-slime-helper)
@@ -106,25 +106,14 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes (quote (tango-dark)))
- '(ido-vertical-define-keys (quote C-n-and-C-p-only))
- '(initial-scratch-message "")
- '(scroll-error-top-bottom nil)
- '(send-mail-function (quote smtpmail-send-it))
- '(set-mark-command-repeat-pop nil)
- '(shift-select-mode t)
- '(smtpmail-smtp-server "smtp.uio.no")
- '(smtpmail-smtp-service 587))
-
-;; Change comment color to violet - or not
-;;(set-face-foreground 'font-lock-comment-face "violet")
-
+ '(custom-enabled-themes (quote (tango-dark))))
 
 (setq
  auto-save-default                        t ; nil to disable auto-save
  c-default-style                    "linux" ; Nice c indention.
  c-basic-offset                           4 ; Indentation
  default-directory                     "~/" ; Default home directory
+ indent-tabs-mode                       nil ; Use spaces instead of tabs
  inhibit-startup-message                  t ; Removes start-up screen
  initial-scratch-message                 "" ; Removes default scratch text
  ring-bell-function                 'ignore ; Stop annoying system ringing noice
@@ -151,11 +140,6 @@ located.")
 (column-number-mode 1) ; Shows column number at the bottom
 (global-linum-mode 0)  ; Shows line number on the left hand side
 (show-paren-mode 1)    ; Marks matching paranthesis
-
-
-;; Setting default text size
-;;(set-face-attribute 'default nil :height 120) ; Useful on high dpi screens on windows
-
 
 ;; Less toolbars, more text. We have shortcuts
 (menu-bar-mode 0)      ; Hide menu
@@ -267,17 +251,12 @@ located.")
 (defun scroll-opp()
   (interactive)
   (scroll-down 4))
+
 (defun scroll-ned()
   (interactive)
   (scroll-up 4))
 
-(defun python-compile()
-  (interactive)
-  (save-buffer)
-  (shell-command "python movements.py"))
-(global-set-key (kbd "<f5>") 'python-compile)
-
-;; scroll one line at a time (less "jumpy" than defaults)
+;; Scroll one line at a time (less "jumpy" than defaults)
 (setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
 (setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
 (setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
