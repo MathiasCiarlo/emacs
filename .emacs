@@ -113,12 +113,13 @@
  c-default-style                    "linux" ; Nice c indention.
  c-basic-offset                           4 ; Indentation
  default-directory                     "~/" ; Default home directory
- indent-tabs-mode                       nil ; Use spaces instead of tabs
  inhibit-startup-message                  t ; Removes start-up screen
  initial-scratch-message                 "" ; Removes default scratch text
  ring-bell-function                 'ignore ; Stop annoying system ringing noice
  word-wrap                                t ; Stop breaking lines splitting words
  )
+
+(setq-default indent-tabs-mode nil) ; Use spaces instead of tabs
 
 
 ;; To avoid file system clutter we put all auto saved files in a single
