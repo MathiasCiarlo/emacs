@@ -30,7 +30,11 @@
     (package-refresh-contents)
     (mapc 'package-install packages)))
 
+;; Emacs Speaks Statistics
+(add-to-list 'load-path "~/gitstuff/ESS/lisp/")
+(load "ess-site")
 
+(define-key ess-mode-map (kbd "C-x C-e") 'ess-eval-line)
 
 ;; Devilry-mode
 (when (file-exists-p "~/.emacs.d/plugins/devilry-mode")
@@ -182,7 +186,65 @@ located.")
 (defun java-shortcuts ()
   (define-abbrev-table 'java-mode-abbrev-table
     '(("psvm" "public static void main(String[] args) {" nil 0)
-      ("sopl" "System.out.println" nil 0)))
+      ("sopl" "System.out.println" nil 0)
+      ("classHund"
+       "class Hund {
+    private String navn;
+    
+    Hund(String navn) {
+        this.navn = navn;
+    }
+    
+    public String toString() {
+        return \"Hund med navn \" + navn;
+    }
+}" nil 0)
+      ("classKatt"
+       "class Katt {
+    private String navn;
+    
+    Katt(String navn) {
+        this.navn = navn;
+    }
+    
+    public String toString() {
+        return \"Katt med navn \" + navn;
+    }
+}" nil 0)
+      ("classPerson"
+       "abstract class Person {
+    protected String personNummer;
+    protected String navn;
+    
+    Person(String personNummer, String navn) {
+        this.personNummer = personNummer;
+        this.navn = navn;
+    }
+
+    public String personNummer() {
+        return personNummer;
+    }
+
+    public String navn() {
+        return navn;
+    }
+    
+    public String toString() {
+        return \"Person med navn \" + navn + \" og personnummer \" + personNummer;
+    }
+}" nil 0)
+      ("classStudent"
+       "class Student {
+    private String navn;
+    
+    Student(String navn) {
+        this.navn = navn;
+    }
+    
+    public String toString() {
+        return \"Student med navn \" + navn;
+    }
+}" nil 0)))
   (abbrev-mode t))
 
 
