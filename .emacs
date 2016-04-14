@@ -30,12 +30,6 @@
     (package-refresh-contents)
     (mapc 'package-install packages)))
 
-;; Emacs Speaks Statistics
-(add-to-list 'load-path "~/gitstuff/ESS/lisp/")
-(load "ess-site")
-
-(define-key ess-mode-map (kbd "C-x C-e") 'ess-eval-line)
-
 ;; Devilry-mode
 (when (file-exists-p "~/.emacs.d/plugins/devilry-mode")
   (add-to-list 'load-path "~/.emacs.d/plugins/devilry-mode/")
@@ -181,6 +175,7 @@ located.")
   (interactive)
   (find-file "~/.emacs"))
 
+
 ;; Adding shortcuts to java-mode, writing the shortcut folowed by a
 ;; non-word character will cause an expansion.
 (defun java-shortcuts ()
@@ -244,14 +239,16 @@ located.")
     public String toString() {
         return \"Student med navn \" + navn;
     }
-}" nil 0)))
-  (abbrev-mode t))
+}" nil 0))))
+
+(defun general-shortcuts ()
+  (define-abbrev-table 'general-abbrev-table
+    '(("apple" "poop" nil 0))))
 
 
 ;; the shortcuts are only useful in java-mode so we'll load them to
 ;; java-mode-hook.
 (add-hook 'java-mode-hook 'java-shortcuts)
-
 
 ;; Change focus between windows in emacs with Alt-left and Alt-right
 (defun select-next-window ()
