@@ -119,6 +119,9 @@
  word-wrap                                t ; Stop breaking lines splitting words
  )
 
+;; Make sure comments indents appropriatly
+(c-set-offset 'comment-intro 0)
+
 (setq-default indent-tabs-mode nil) ; Use spaces instead of tabs
 
 
@@ -190,11 +193,11 @@ located.")
       ("classHund"
        "class Hund {
     private String navn;
-    
+
     Hund(String navn) {
         this.navn = navn;
     }
-    
+
     public String toString() {
         return \"Hund med navn \" + navn;
     }
@@ -202,11 +205,11 @@ located.")
       ("classKatt"
        "class Katt {
     private String navn;
-    
+
     Katt(String navn) {
         this.navn = navn;
     }
-    
+
     public String toString() {
         return \"Katt med navn \" + navn;
     }
@@ -215,7 +218,7 @@ located.")
        "abstract class Person {
     protected String personNummer;
     protected String navn;
-    
+
     Person(String personNummer, String navn) {
         this.personNummer = personNummer;
         this.navn = navn;
@@ -228,7 +231,7 @@ located.")
     public String navn() {
         return navn;
     }
-    
+
     public String toString() {
         return \"Person med navn \" + navn + \" og personnummer \" + personNummer;
     }
@@ -236,11 +239,11 @@ located.")
       ("classStudent"
        "class Student {
     private String navn;
-    
+
     Student(String navn) {
         this.navn = navn;
     }
-    
+
     public String toString() {
         return \"Student med navn \" + navn;
     }
