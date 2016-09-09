@@ -108,8 +108,10 @@
 
 (setq
  auto-save-default                        t ; nil to disable auto-save
+ abbrev-mode                              t ; Global abbrev mode
  c-default-style                    "linux" ; Nice c indention.
  c-basic-offset                           4 ; Indentation
+ js-indent-level                          2 ; js indentation
  default-directory                     "~/" ; Default home directory
  inhibit-startup-message                  t ; Removes start-up screen
  initial-scratch-message                 "" ; Removes default scratch text
@@ -137,12 +139,12 @@ located.")
 ;; Basic looks
 (blink-cursor-mode 0)  ; Self explainatory
 (column-number-mode 1) ; Shows column number at the bottom
-(global-linum-mode 0)  ; Shows line number on the left hand side
+(global-linum-mode 1)  ; Shows line number on the left hand side
 (show-paren-mode 1)    ; Marks matching paranthesis
 
 ;; Less toolbars, more text. We have shortcuts
 (menu-bar-mode 0)      ; Hide menu
-(tool-bar-mode 0)      ; Hide toolbar
+(tool-bar-mode 1)      ; Hide toolbar
 (scroll-bar-mode 0)    ; Hide scrollbar
 
 
@@ -174,6 +176,9 @@ located.")
 (defun init()
   (interactive)
   (find-file "~/.emacs"))
+
+(define-abbrev-table 'devilry-mode-abbrev-table
+  '(("kodestil" "[folk.uio.no/mathiact/kodestil](kodestil)" nil 0)))
 
 
 ;; Adding shortcuts to java-mode, writing the shortcut folowed by a
@@ -243,12 +248,13 @@ located.")
 
 (defun general-shortcuts ()
   (define-abbrev-table 'general-abbrev-table
-    '(("apple" "poop" nil 0))))
+    '(("apple" "poop" nil 1))))
 
 
 ;; the shortcuts are only useful in java-mode so we'll load them to
 ;; java-mode-hook.
 (add-hook 'java-mode-hook 'java-shortcuts)
+
 
 ;; Change focus between windows in emacs with Alt-left and Alt-right
 (defun select-next-window ()
