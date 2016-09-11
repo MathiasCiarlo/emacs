@@ -87,7 +87,7 @@
 (require 'auto-complete-config)
 
 ;; load the default config of auto-complete
-(ac-config-default)
+;;(ac-config-default)
 
 (unless (package-installed-p 'ac-geiser)
   (package-install 'ac-geiser))
@@ -188,8 +188,8 @@ located.")
 ;; non-word character will cause an expansion.
 (defun java-shortcuts ()
   (define-abbrev-table 'java-mode-abbrev-table
-    '(("psvm" "public static void main(String[] args) {" nil 0)
-      ("sopl" "System.out.println" nil 0)
+    '(("psvm" "public static void main (String[] args) {}" nil 0)
+      ("sopl" "System.out.println()" nil 0)
       ("classHund"
        "class Hund {
     private String navn;
